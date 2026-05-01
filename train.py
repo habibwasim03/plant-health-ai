@@ -38,5 +38,14 @@ def create_data_pipeline(data_dir, batch_size, image_size):
     return train_dataset, validation_dataset, class_names
 
 if __name__ == "__main__":
+    from utils.augmentation import get_data_augmentation_module
+    
     train_ds, val_ds, classes = create_data_pipeline(DATA_DIR, BATCH_SIZE, IMAGE_SIZE)
     print("\n[SUCCESS] DATA PIPELINE INITIALIZED SUCCESSFULLY.")
+    
+    print("\n--- Initializing Data Augmentation Module ---")
+    data_augmentation_layer = get_data_augmentation_module()
+    
+    data_augmentation_layer.build(input_shape=(None, 224, 224, 3))
+    data_augmentation_layer.summary()
+    print("\n[SUCCESS] PREPROCESSING & AUGMENTATION MODULE READY.")
