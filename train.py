@@ -38,14 +38,63 @@ def create_data_pipeline(data_dir, batch_size, image_size):
     return train_dataset, validation_dataset, class_names
 
 if __name__ == "__main__":
-    from utils.augmentation import get_data_augmentation_module
+    from models.model import build_model
     
     train_ds, val_ds, classes = create_data_pipeline(DATA_DIR, BATCH_SIZE, IMAGE_SIZE)
     print("\n[SUCCESS] DATA PIPELINE INITIALIZED SUCCESSFULLY.")
     
-    print("\n--- Initializing Data Augmentation Module ---")
-    data_augmentation_layer = get_data_augmentation_module()
+    print("\n--- Building MobileNetV2 Transfer Learning Model ---")
+    model = build_model(input_shape=(224, 224, 3), num_classes=len(classes))
+    model.summary()
+    print("\n[SUCCESS] MODEL ARCHITECTURE BUILT SUCCESSFULLY.")
     
-    data_augmentation_layer.build(input_shape=(None, 224, 224, 3))
-    data_augmentation_layer.summary()
-    print("\n[SUCCESS] PREPROCESSING & AUGMENTATION MODULE READY.")
+    EPOCHS = 10
+    
+    print("\n--- Compiling Model ---")
+    model.compile(
+        optimizer=tf.keras.optimizers.Adam(learning_rate=0.001),
+        loss='categorical_crossentropy',
+        metrics=['accuracy']
+    )
+    
+    print(f"\n--- Starting Initial Training (Step 6: Top Layers for {EPOCHS} Epochs) ---")
+    history = model.fit(
+        train_ds,
+        validation_data=val_ds,
+        epochs=EPOCHS
+    )
+    print("\n[SUCCESS] INITIAL TRAINING OF TOP LAYERS COMPLETED SUCCESSFULLY.")
+    
+    # Step 7: Fine-Tuning
+    print("\n--- Step 7: Unfreezing Deep Base Layers for Fine-Tuning ---")
+    base_model = model.get_layer("mobilenetv2_1.00_224")
+    base_model.trainable = True
+
+    # Freeze the early layers (0 to 100) and keep top layers (100+) trainable
+    fine_tune_at = 100
+    for layer in base_model.layers[:fine_tune_at]:
+        layer.trainable = False
+
+    print("\n--- Re-Compiling Model with Low Learning Rate (1e-5) ---")
+    model.compile(
+        optimizer=tf.keras.optimizers.Adam(learning_rate=1e-5),
+        loss='categorical_crossentropy',
+        metrics=['accuracy']
+    )
+
+    FINE_TUNE_EPOCHS = 10
+    total_epochs = EPOCHS + FINE_TUNE_EPOCHS
+
+    print(f"\n--- Starting Fine-Tuning (Epochs {EPOCHS + 1} to {total_epochs}) ---")
+    history_fine = model.fit(
+        train_ds,
+        validation_data=val_ds,
+        epochs=total_epochs,
+        initial_epoch=history.epoch[-1] + 1
+    )
+    print("\n[SUCCESS] FINE-TUNING COMPLETED SUCCESSFULLY.")
+    
+    os.makedirs('models', exist_ok=True)
+    model_save_path = os.path.join('models', 'potato_disease_model.keras')
+    model.save(model_save_path)
+    print(f"\n[SUCCESS] FINAL FINE-TUNED MODEL SAVED TO '{model_save_path}'.")
