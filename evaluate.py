@@ -5,7 +5,8 @@ from train import create_data_pipeline, DATA_DIR, BATCH_SIZE, IMAGE_SIZE
 
 def evaluate_model(model_path='models/potato_disease_model.keras'):
     print(f"--- Loading Saved Model from '{model_path}' ---")
-    model = tf.keras.models.load_model(model_path)
+    custom_objects = {'preprocess_input': tf.keras.applications.mobilenet_v2.preprocess_input}
+    model = tf.keras.models.load_model(model_path, custom_objects=custom_objects)
     
     print("\n--- Loading Validation Data for Evaluation ---")
     _, val_ds, class_names = create_data_pipeline(DATA_DIR, BATCH_SIZE, IMAGE_SIZE)
