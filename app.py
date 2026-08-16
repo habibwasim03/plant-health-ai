@@ -37,14 +37,18 @@ if uploaded_file is not None:
     st.divider()
     
     display_name = predicted_class.replace("Potato___", "").replace("_", " ").title()
+    CONFIDENCE_THRESHOLD = 70.0
     
-    if "healthy" in predicted_class.lower():
+    if confidence < CONFIDENCE_THRESHOLD:
+        st.warning(f"⚠️ **Low Confidence Warning ({confidence:.2f}%)**\n\nThe uploaded image could not be reliably diagnosed. Please make sure to upload a clear photo of a **Potato leaf**.")
+    elif "healthy" in predicted_class.lower():
         st.success(f"### Diagnosis: **{display_name}** 🟢")
+        st.metric(label="Model Confidence Score", value=f"{confidence:.2f}%")
+        st.progress(min(int(confidence), 100))
     else:
         st.error(f"### Diagnosis: **{display_name}** ⚠️")
-        
-    st.metric(label="Model Confidence Score", value=f"{confidence:.2f}%")
-    st.progress(min(int(confidence), 100))
+        st.metric(label="Model Confidence Score", value=f"{confidence:.2f}%")
+        st.progress(min(int(confidence), 100))
 
 st.divider()
 st.caption("Built with TensorFlow & Streamlit | Plant Health AI")

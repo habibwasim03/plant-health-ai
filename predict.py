@@ -20,10 +20,10 @@ def predict_image(image_input, model_path=MODEL_PATH):
     model = get_model(model_path)
     
     if isinstance(image_input, str):
-        img = tf.keras.utils.load_img(image_input, target_size=IMAGE_SIZE)
+        img = Image.open(image_input).convert('RGB').resize(IMAGE_SIZE)
         img_array = tf.keras.utils.img_to_array(img)
     elif isinstance(image_input, Image.Image):
-        img = image_input.resize(IMAGE_SIZE)
+        img = image_input.convert('RGB').resize(IMAGE_SIZE)
         img_array = tf.keras.utils.img_to_array(img)
     else:
         img_array = image_input
