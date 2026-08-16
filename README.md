@@ -11,4 +11,5 @@ This project is a deep learning system that classifies plant leaf images into di
 - **Step 1 (Data Setup)**: Downloaded and extracted the PlantVillage dataset (Potato subset).
 - **Step 2 (Data Pipeline)**: Created `train.py` to efficiently load the images, split into training/validation sets, and resize to 224x224.
 
-Next up: Data Augmentation & Model Building!
+: Data Augmentation & Model Building completed 
+
